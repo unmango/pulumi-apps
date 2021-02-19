@@ -1,0 +1,18 @@
+[*.cs]
+indent_size = 4
+
+[*.ts]
+indent_size = 2
+
+[*.{*proj,props,targets}]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*]
+indent_style = space
+insert_final_newline = true
