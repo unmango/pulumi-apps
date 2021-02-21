@@ -3,39 +3,45 @@ import { ComponentResourceOptions, CustomResourceOptions, Input, Output } from '
 import * as pulumi from '@pulumi/pulumi';
 import { AppBase } from './app-base';
 
+type WorkloadDiscriminator = {
+  type: 'Deployment' | 'StatefulSet' | 'DaemonSet';
+};
+
+type Deployment = k8s.apps.v1.Deployment;
+type StatefulSet = k8s.apps.v1.StatefulSet;
+type DaemonSet = k8s.apps.v1.DaemonSet;
+
+type DeploymentSpec = k8s.types.input.apps.v1.DeploymentSpec & { type: 'Deployment'; };
+type StatefulSetSpec = k8s.types.input.apps.v1.StatefulSet & { type: 'StatefulSet'; };
+type DaemonSetSpec = k8s.types.input.apps.v1.DaemonSet & { type: 'DaemonSet'; };
+
 type Workload =
-  | k8s.apps.v1.Deployment
-  | k8s.apps.v1.StatefulSet
-  | k8s.apps.v1.DaemonSet;
+  | Deployment
+  | StatefulSet
+  | DaemonSet;
 
 type WorkloadSpec =
-  | k8s.types.input.apps.v1.DeploymentSpec
-  | k8s.types.input.apps.v1.StatefulSetSpec
-  | k8s.types.input.apps.v1.DaemonSetSpec;
+  | DeploymentSpec
+  | StatefulSetSpec
+  | DaemonSetSpec;
 
 type GetWorkloadSpec<T extends Workload> =
-  T extends k8s.apps.v1.Deployment ?
-  k8s.types.input.apps.v1.DeploymentSpec :
-  T extends k8s.apps.v1.StatefulSet ?
-  k8s.types.input.apps.v1.StatefulSetSpec :
-  T extends k8s.apps.v1.DaemonSet ?
-  k8s.types.input.apps.v1.DaemonSetSpec :
+  T extends Deployment ? DeploymentSpec :
+  T extends StatefulSet ? StatefulSetSpec :
+  T extends DaemonSet ? DaemonSetSpec :
   never;
 
 type GetWorkloadArgs<T extends Workload> =
-  T extends k8s.apps.v1.Deployment ?
-  k8s.apps.v1.DeploymentArgs :
-  T extends k8s.apps.v1.StatefulSet ?
-  k8s.apps.v1.StatefulSetArgs :
-  T extends k8s.apps.v1.DaemonSet ?
-  k8s.apps.v1.DaemonSetArgs :
+  T extends Deployment ? k8s.apps.v1.DeploymentArgs :
+  T extends StatefulSet ? k8s.apps.v1.StatefulSetArgs :
+  T extends DaemonSet ? k8s.apps.v1.DaemonSetArgs :
   never;
 
 type CreateWorkload<T extends Workload> = {
-  new(name: string, args: GetWorkloadArgs<T>, opts?: CustomResourceOptions): T;
+  new(name: string, args?: GetWorkloadArgs<T>, opts?: CustomResourceOptions): T;
 };
 
-interface Args<TSpec extends WorkloadSpec = k8s.types.input.apps.v1.DeploymentSpec> {
+interface Args<TSpec extends WorkloadSpec = DeploymentSpec> {
   namespace: Input<string>;
   workload: Input<TSpec & {
     name?: Input<string>;
@@ -49,49 +55,84 @@ interface Args<TSpec extends WorkloadSpec = k8s.types.input.apps.v1.DeploymentSp
 }
 
 export abstract class ContainerApp<
-  TWorkload extends Workload = k8s.apps.v1.Deployment,
-  TArgs extends Args = Args<GetWorkloadSpec<TWorkload>>,
+  TWorkload extends Workload = Deployment,
   > extends AppBase {
 
   // public readonly workload: TWorkload;
-  public readonly service?: Output<k8s.core.v1.Service>;
-  public readonly ingress?: Output<k8s.networking.v1.Ingress>;
+  public readonly service?: k8s.core.v1.Service;
+  public readonly ingress?: k8s.networking.v1.Ingress;
 
-  constructor(app: string, name: string, args: TArgs, opts?: ComponentResourceOptions) {
+  constructor(app: string, name: string, args: Args<GetWorkloadSpec<TWorkload>>, opts?: ComponentResourceOptions) {
     super(app, name, opts);
 
-    // this.workload = new CreateWorkload<TWorkload>('', args.workload, {});
-
-    // const temp = new CreateWorkload<TWorkload>('', {}, undefined);
+    // this.workload = pulumi.output(args.workload).apply(x => {
+    //   switch (x.type) {
+    //   case 'Deployment':
+    //     return new k8s.apps.v1.Deployment(this.getName(), {
+    //       metadata: this.getMetadata(args, x),
+    //     }, { parent: this });
+    //   case 'StatefulSet':
+    //     return new k8s.apps.v1.StatefulSet(this.getName(), {
+    //       metadata: this.getMetadata(args, x),
+    //     }, { parent: this });
+    //   case 'DaemonSet':
+    //     return new k8s.apps.v1.DaemonSet(this.getName(), {
+    //       metadata: this.getMetadata(args, x),
+    //     }, { parent: this });
+    //   }
+    // });
 
     if (args.service) {
-      this.service = pulumi.output(args.service).apply(x => {
-        return new k8s.core.v1.Service(this.getName(), {
-          metadata: this.getMetadata(args, x),
-          spec: args.service,
-        }, { parent: this });
-      });
+      this.service = new k8s.core.v1.Service(this.getName(), {
+        metadata: this.getMetadata(args, args.service),
+        spec: pulumi.output(args.service).apply(s => ({
+          ...s,
+        })),
+      }, { parent: this });
     }
 
     if (args.ingress) {
-      this.ingress = pulumi.output(args.ingress).apply(x => {
-        return new k8s.networking.v1.Ingress(this.getName(), {
-          metadata: this.getMetadata(args, x),
-          spec: args.ingress,
-        }, { parent: this });
-      });
+      this.ingress = new k8s.networking.v1.Ingress(this.getName(), {
+        metadata: this.getMetadata(args, args.ingress),
+        spec: pulumi.output(args.ingress).apply(i => ({
+          // ...i,
+          rules: this.service?.spec.ports.apply(ports => ports.map(port => ({
+            
+          }))),
+        })),
+      }, { parent: this });
     }
   }
 
+  // private getWorkloadCreator(spec: GetWorkloadSpec<TWorkload>): CreateWorkload<TWorkload> {
+  //   switch (spec.type) {
+  //   case 'Deployment': return k8s.apps.v1.Deployment;
+  //   case 'StatefulSet': return k8s.apps.v1.StatefulSet;
+  //   case 'DaemonSet': return k8s.apps.v1.DaemonSet;
+  //   }
+  // }
+
+  private createRules(): Output<k8s.types.input.networking.v1.IngressRule[]> {
+    if (!this.service) return pulumi.output([]);
+
+    return this.service.spec.ports
+      .apply(ports => ports.map(port => (<k8s.types.input.networking.v1.IngressRule>{
+        host: 'TODO',
+        http: {},
+      })));
+  }
+
   private getMetadata(
-    ns: { namespace: Input<string>; },
-    n: { name?: Input<string>; },
-  ): k8s.types.input.meta.v1.ObjectMeta {
-    return { namespace: ns.namespace, name: n.name };
+    ns: Input<{ namespace: Input<string>; }>,
+    n: Input<{ name?: Input<string>; }>,
+  ): Output<k8s.types.input.meta.v1.ObjectMeta> {
+    return pulumi.all([ns, n])
+      .apply(([a, b]) => [a.namespace, b.name])
+      .apply(([namespace, name]) => ({ namespace, name }));
   }
 
 }
 
 export type ContainerAppArgs<
-  T extends WorkloadSpec = k8s.types.input.apps.v1.DeploymentSpec
+  T extends WorkloadSpec = DeploymentSpec
   > = Args<T>;
