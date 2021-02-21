@@ -1,3 +1,5 @@
 import { Harbor } from './harbor';
 
-const temp = new Harbor()
+const temp = new Harbor('harbor', {
+  
+});
