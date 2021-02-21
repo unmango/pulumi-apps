@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "prepublish": "npm test && npm version patch && npm run build",
+    "prepublishOnly": "npm test && npm version patch && npm run build",
     "test": "mocha -r ts-node/register ./src/**/*.spec.ts"
   },
   "repository": {
