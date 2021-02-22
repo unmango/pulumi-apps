@@ -21,13 +21,6 @@ interface HelmArgs extends BaseArgs {
   method: 'helm';
 }
 
-interface ChartArgs {
-  repo: Input<string>;
-  repoUrl: Input<string>;
-  chart: Input<string>;
-  version: Input<string>;
-}
-
 type Args = RancherArgs | HelmArgs;
 
 type AppConstructorArgs<T extends pulumi.Inputs> = Args & T;
@@ -66,6 +59,14 @@ export class HelmApp<T extends pulumi.Inputs = pulumi.Inputs> extends AppBase {
     }
   }
 
+}
+
+// TODO: Allow fetching from existing catalog
+export interface ChartArgs {
+  repo: Input<string>;
+  repoUrl: Input<string>;
+  chart: Input<string>;
+  version: Input<string>;
 }
 
 export type HelmAppArgs = Args;
