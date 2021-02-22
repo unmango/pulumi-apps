@@ -8,9 +8,7 @@ import * as util from './util';
 interface BaseArgs {
   method: 'helm' | 'rancher';
   namespace: Input<string>;
-  repo: Input<string>;
-  chart: Input<string>;
-  version: Input<string>;
+  version?: Input<string>;
 }
 
 interface RancherArgs extends BaseArgs {
@@ -21,33 +19,36 @@ interface RancherArgs extends BaseArgs {
 
 interface HelmArgs extends BaseArgs {
   method: 'helm';
-  test: Input<string>
 }
 
-type ChartOnly = 'repo' | 'chart' | 'version';
+interface ChartArgs {
+  repo: Input<string>;
+  repoUrl: Input<string>;
+  chart: Input<string>;
+  version: Input<string>;
+}
 
 type Args = RancherArgs | HelmArgs;
 
-type AppConstructorArgs<T> =
-  Omit<Args, ChartOnly>
-  & Partial<Pick<Args, 'version'>>
-  & T;
+type AppConstructorArgs<T extends pulumi.Inputs> = Args & T;
 
-export class HelmApp<T extends pulumi.Inputs> extends AppBase {
+export class HelmApp<T extends pulumi.Inputs = pulumi.Inputs> extends AppBase {
 
   public readonly chartApp?: k8s.helm.v3.Chart;
   public readonly rancherApp?: AppV2;
 
-  constructor(app: string, name: string, args: Args, values: T, opts?: ComponentResourceOptions) {
+  constructor(app: string, chartArgs: ChartArgs, name: string, args: AppConstructorArgs<T>, opts?: ComponentResourceOptions) {
     super(app, name, opts);
+
+    const values: T = args;
 
     switch (args.method) {
     case 'helm':
       this.chartApp = new k8s.helm.v3.Chart(this.getName(), {
-        chart: args.chart,
-        fetchOpts: { repo: args.repo },
+        chart: chartArgs.chart,
+        fetchOpts: { repo: chartArgs.repoUrl },
         namespace: args.namespace,
-        version: args.version,
+        version: args.version ?? chartArgs.version,
         values: values,
       }, { parent: this });
       break;
@@ -56,21 +57,12 @@ export class HelmApp<T extends pulumi.Inputs> extends AppBase {
         clusterId: args.clusterId,
         projectId: args.projectId,
         namespace: args.namespace,
-        repoName: args.repo,
-        chartName: args.chart,
-        chartVersion: args.version,
+        repoName: chartArgs.repo, // Catalog name
+        chartName: chartArgs.chart,
+        chartVersion: args.version ?? chartArgs.version,
         values: util.toYaml(values),
       }, { parent: this });
       break;
-    }
-  }
-
-  protected static getBaseArgs<T>(args: AppConstructorArgs<T>, chartArgs: Pick<Args, ChartOnly>): Args {
-    switch (args.method) {
-    case 'helm':
-      return { ...args, ...chartArgs };
-    case 'rancher':
-      return { ...args, ...chartArgs };
     }
   }
 

@@ -6,12 +6,18 @@ type Args = HelmAppConstructorParameters<HarborArgs>;
 
 export class Harbor extends HelmApp<HarborArgs> {
 
+  public static readonly repo = 'bitnami';
+  public static readonly chart = 'harbor';
+  public static readonly defaultVersion = '9.4.7';
+
+  public readonly defaultVersion = Harbor.defaultVersion;
+
   constructor(...args: Args) {
-    const temp = HelmApp.getBaseArgs(args, {});
-    const name = args[0];
-    const appArgs = args[1];
-    const opts = args[2];
-    super('harbor', name, {}, appArgs, opts);
+    super('harbor', {
+      repo: Harbor.repo,
+      chart: Harbor.chart,
+      version: Harbor.defaultVersion,
+    }, ...args);
 
     this.registerOutputs();
   }
