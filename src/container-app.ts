@@ -1,5 +1,5 @@
 import * as k8s from '@pulumi/kubernetes';
-import { ComponentResourceOptions, CustomResourceOptions, Input, Output } from '@pulumi/pulumi';
+import { ComponentResourceOptions, Input, Output } from '@pulumi/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { AppBase } from './app-base';
 
@@ -7,45 +7,13 @@ type WorkloadDiscriminator = {
   type: 'Deployment' | 'StatefulSet' | 'DaemonSet';
 };
 
-type Deployment = k8s.apps.v1.Deployment;
-type StatefulSet = k8s.apps.v1.StatefulSet;
-type DaemonSet = k8s.apps.v1.DaemonSet;
+// type CreateWorkload<T extends Workload> = {
+//   new(name: string, args?: GetWorkloadArgs<T>, opts?: CustomResourceOptions): T;
+// };
 
-type DeploymentSpec = k8s.types.input.apps.v1.DeploymentSpec & { type: 'Deployment'; };
-type StatefulSetSpec = k8s.types.input.apps.v1.StatefulSet & { type: 'StatefulSet'; };
-type DaemonSetSpec = k8s.types.input.apps.v1.DaemonSet & { type: 'DaemonSet'; };
-
-type Workload =
-  | Deployment
-  | StatefulSet
-  | DaemonSet;
-
-type WorkloadSpec =
-  | DeploymentSpec
-  | StatefulSetSpec
-  | DaemonSetSpec;
-
-type GetWorkloadSpec<T extends Workload> =
-  T extends Deployment ? DeploymentSpec :
-  T extends StatefulSet ? StatefulSetSpec :
-  T extends DaemonSet ? DaemonSetSpec :
-  never;
-
-type GetWorkloadArgs<T extends Workload> =
-  T extends Deployment ? k8s.apps.v1.DeploymentArgs :
-  T extends StatefulSet ? k8s.apps.v1.StatefulSetArgs :
-  T extends DaemonSet ? k8s.apps.v1.DaemonSetArgs :
-  never;
-
-type CreateWorkload<T extends Workload> = {
-  new(name: string, args?: GetWorkloadArgs<T>, opts?: CustomResourceOptions): T;
-};
-
-interface Args<TSpec extends WorkloadSpec = DeploymentSpec> {
+interface BaseArgs {
+  method: 'deployment' | 'statefulset' | 'daemonset';
   namespace: Input<string>;
-  workload: Input<TSpec & {
-    name?: Input<string>;
-  }>;
   service?: Input<k8s.types.input.core.v1.ServiceSpec & {
     name?: Input<string>;
   }>;
@@ -54,16 +22,58 @@ interface Args<TSpec extends WorkloadSpec = DeploymentSpec> {
   }>;
 }
 
-export abstract class ContainerApp<
-  TWorkload extends Workload = Deployment,
-  > extends AppBase {
+interface DeploymentArgs extends BaseArgs {
+  method: 'deployment';
+  workload: Input<k8s.types.input.apps.v1.DeploymentSpec & {
+    name?: Input<string>;
+  }>;
+}
 
-  // public readonly workload: TWorkload;
+interface StatefulSetArgs extends BaseArgs {
+  method: 'statefulset';
+  workload: Input<k8s.types.input.apps.v1.StatefulSetSpec & {
+    name?: Input<string>;
+  }>;
+}
+
+interface DaemonSetArgs extends BaseArgs {
+  method: 'daemonset';
+  workload: Input<k8s.types.input.apps.v1.DaemonSetSpec & {
+    name?: Input<string>;
+  }>;
+}
+
+type Args =
+  | DeploymentArgs
+  | StatefulSetArgs
+  | DaemonSetArgs;
+
+type GetWorkload<T extends Args> =
+  T extends DeploymentArgs ? k8s.apps.v1.Deployment :
+  T extends StatefulSetArgs ? k8s.apps.v1.StatefulSet :
+  T extends DaemonSetArgs ? k8s.apps.v1.DaemonSet :
+  never;
+
+export class ContainerApp<T extends Args> extends AppBase {
+
+  public readonly workload: GetWorkload<T>;
   public readonly service?: k8s.core.v1.Service;
   public readonly ingress?: k8s.networking.v1.Ingress;
 
-  constructor(app: string, name: string, args: Args<GetWorkloadSpec<TWorkload>>, opts?: ComponentResourceOptions) {
+  constructor(app: string, name: string, args: T, opts?: ComponentResourceOptions) {
     super(app, name, opts);
+
+    switch (args.method) {
+    case 'deployment':
+      this.workload = new k8s.apps.v1.Deployment(this.getName());
+      break;
+    case 'statefulset':
+      this.workload = new k8s.apps.v1.StatefulSet(this.getName());
+      break;
+    case 'daemonset':
+      this.workload = new k8s.apps.v1.DaemonSet(this.getName());
+      break;
+    }
 
     // this.workload = pulumi.output(args.workload).apply(x => {
     //   switch (x.type) {
@@ -97,10 +107,17 @@ export abstract class ContainerApp<
         spec: pulumi.output(args.ingress).apply(i => ({
           // ...i,
           rules: this.service?.spec.ports.apply(ports => ports.map(port => ({
-            
+
           }))),
         })),
       }, { parent: this });
+    }
+  }
+
+  private getWorkload(args: T): GetWorkload<T> {
+    switch (args.method) {
+    case 'deployment':
+      return new k8s.apps.v1.Deployment(this.getName());
     }
   }
 
@@ -133,6 +150,9 @@ export abstract class ContainerApp<
 
 }
 
-export type ContainerAppArgs<
-  T extends WorkloadSpec = DeploymentSpec
-  > = Args<T>;
+export type ContainerAppArgs = Args;
+
+const temp = new ContainerApp('', '', {
+  method: 'deployment',
+  
+});
