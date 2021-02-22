@@ -1,6 +1,6 @@
 import { Input } from '@pulumi/pulumi';
 import { HelmApp, HelmAppConstructorParameters } from '../helm-app';
-import { BitnamiArgs, getAppArgs } from './common';
+import { BitnamiArgs, CommonArgs, getAppArgs } from './common';
 
 type Args = HelmAppConstructorParameters<HarborArgs>;
 
@@ -23,5 +23,17 @@ export class Harbor extends HelmApp<HarborArgs> {
 }
 
 export interface HarborArgs extends BitnamiArgs {
-  registry: Input<string>;
+  caBundleSecretName?: Input<string>;
+  kubeVersion?: Input<string>;
+  internalTls?: Input<{
+    enabled?: Input<boolean>;
+  }>;
+  logLevel?: Input<string>;
+
+  /**
+   * Option to ensure all passwords and keys are set by the user.
+   */
+  forcePassword?: Input<string>;
+
+  harborAdminPassword?: Input<string>;
 }
