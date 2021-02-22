@@ -4,7 +4,15 @@ import { InputArray } from '../input';
 import { ExternalTrafficPolicy, AffinityType, PullPolicy, ServiceType } from '../types';
 import { BitnamiCatalog } from './catalog';
 
-interface GlobalArgs {
+export interface Enableable {
+  enabled?: Input<boolean>;
+}
+
+export interface Debuggable {
+  debug?: Input<boolean>;
+}
+
+export interface GlobalArgs {
   /**
    * Global Docker image registry
    */
@@ -40,8 +48,7 @@ export interface ImageArgs {
   pullSecrets?: InputArray<string>;
 }
 
-export interface ProbeArgs {
-  enabled?: Input<boolean>;
+export interface ProbeArgs extends Enableable {
   // TODO: httpGet || command || etc
   initialDelaySeconds?: Input<string>;
   periodSeconds?: Input<string>;
@@ -61,14 +68,12 @@ export interface ResourcesArgs {
   }>;
 }
 
-export interface ContainerSecurityContextArgs {
-  enabled: Input<boolean>;
+export interface ContainerSecurityContextArgs extends Enableable {
   runAsUser?: Input<number>;
   runAsNonRoot?: Input<boolean>;
 }
 
-export interface PodSecurityContextArgs {
-  enabled?: Input<boolean>;
+export interface PodSecurityContextArgs extends Enableable {
   fsGroup?: Input<number>;
 }
 
@@ -96,8 +101,7 @@ export interface ContainerArgs {
   }>;
 }
 
-export interface ObjectArgs {
-  enabled?: Input<boolean>;
+export interface ObjectArgs extends Enableable {
   image?: Input<ImageArgs>;
 
   /**
@@ -208,8 +212,7 @@ export interface ObjectArgs {
   sidecars?: InputArray<ContainerArgs>;
 }
 
-export interface VolumePermissionsArgs {
-  enabled?: Input<boolean>;
+export interface VolumePermissionsArgs extends Enableable {
   image?: Input<ImageArgs>;
   resources?: Input<ResourcesArgs>;
 }
