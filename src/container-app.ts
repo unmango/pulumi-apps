@@ -54,9 +54,12 @@ type GetWorkload<T extends Args> =
   T extends DaemonSetArgs ? k8s.apps.v1.DaemonSet :
   never;
 
-export class ContainerApp<T extends Args> extends AppBase {
+export class ContainerApp<T extends Args = Args> extends AppBase {
 
-  public readonly workload: GetWorkload<T>;
+  // public readonly workload: GetWorkload<T>;
+  public readonly deployment?: k8s.apps.v1.Deployment;
+  public readonly statefulSet?: k8s.apps.v1.StatefulSet;
+  public readonly daemonSet?: k8s.apps.v1.DaemonSet;
   public readonly service?: k8s.core.v1.Service;
   public readonly ingress?: k8s.networking.v1.Ingress;
 
@@ -65,32 +68,21 @@ export class ContainerApp<T extends Args> extends AppBase {
 
     switch (args.method) {
     case 'deployment':
-      this.workload = new k8s.apps.v1.Deployment(this.getName());
+      this.deployment = new k8s.apps.v1.Deployment(this.getName(), {
+        metadata: this.getMetadata(args, args.workload),
+        spec: args.workload,
+      }, { parent: this });
       break;
     case 'statefulset':
-      this.workload = new k8s.apps.v1.StatefulSet(this.getName());
+      this.statefulSet = new k8s.apps.v1.StatefulSet(this.getName(), {
+        metadata: this.getMetadata(args, args.workload),
+        spec: args.workload,
+      });
       break;
     case 'daemonset':
-      this.workload = new k8s.apps.v1.DaemonSet(this.getName());
+      this.daemonSet = new k8s.apps.v1.DaemonSet(this.getName());
       break;
     }
-
-    // this.workload = pulumi.output(args.workload).apply(x => {
-    //   switch (x.type) {
-    //   case 'Deployment':
-    //     return new k8s.apps.v1.Deployment(this.getName(), {
-    //       metadata: this.getMetadata(args, x),
-    //     }, { parent: this });
-    //   case 'StatefulSet':
-    //     return new k8s.apps.v1.StatefulSet(this.getName(), {
-    //       metadata: this.getMetadata(args, x),
-    //     }, { parent: this });
-    //   case 'DaemonSet':
-    //     return new k8s.apps.v1.DaemonSet(this.getName(), {
-    //       metadata: this.getMetadata(args, x),
-    //     }, { parent: this });
-    //   }
-    // });
 
     if (args.service) {
       this.service = new k8s.core.v1.Service(this.getName(), {
@@ -114,21 +106,6 @@ export class ContainerApp<T extends Args> extends AppBase {
     }
   }
 
-  private getWorkload(args: T): GetWorkload<T> {
-    switch (args.method) {
-    case 'deployment':
-      return new k8s.apps.v1.Deployment(this.getName());
-    }
-  }
-
-  // private getWorkloadCreator(spec: GetWorkloadSpec<TWorkload>): CreateWorkload<TWorkload> {
-  //   switch (spec.type) {
-  //   case 'Deployment': return k8s.apps.v1.Deployment;
-  //   case 'StatefulSet': return k8s.apps.v1.StatefulSet;
-  //   case 'DaemonSet': return k8s.apps.v1.DaemonSet;
-  //   }
-  // }
-
   private createRules(): Output<k8s.types.input.networking.v1.IngressRule[]> {
     if (!this.service) return pulumi.output([]);
 
@@ -151,8 +128,3 @@ export class ContainerApp<T extends Args> extends AppBase {
 }
 
 export type ContainerAppArgs = Args;
-
-const temp = new ContainerApp('', '', {
-  method: 'deployment',
-  
-});
