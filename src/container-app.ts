@@ -97,10 +97,10 @@ export class ContainerApp extends AppBase {
       this.ingress = new k8s.networking.v1.Ingress(this.getName(), {
         metadata: this.getMetadata(args, args.ingress),
         spec: pulumi.output(args.ingress).apply(i => ({
-          // ...i,
-          rules: this.service?.spec.ports.apply(ports => ports.map(port => ({
+          ...i,
+          // rules: this.service?.spec.ports.apply(ports => ports.map(port => ({
 
-          }))),
+          // }))),
         })),
       }, { parent: this });
     }
