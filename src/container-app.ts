@@ -21,12 +21,8 @@ interface BaseArgs {
   method: 'deployment' | 'statefulset' | 'daemonset';
   namespace: Input<string>;
   workload: Input<DeploymentSpec | StatefulSetSpec | DaemonSetSpec>;
-  service?: Input<k8s.types.input.core.v1.ServiceSpec & {
-    name?: Input<string>;
-  }>;
-  ingress?: Input<k8s.types.input.networking.v1.IngressSpec & {
-    name?: Input<string>;
-  }>;
+  service?: Input<k8s.types.input.core.v1.ServiceSpec & Name>;
+  ingress?: Input<k8s.types.input.networking.v1.IngressSpec & Name>;
 }
 
 interface DeploymentArgs extends BaseArgs {
@@ -123,7 +119,7 @@ export class ContainerApp extends AppBase {
   private getMetadata(
     ns: Input<{ namespace: Input<string>; }>,
     n: Input<{ name?: Input<string>; }>,
-  ): Output<k8s.types.input.meta.v1.ObjectMeta> {
+  ): Output<input.meta.v1.ObjectMeta> {
     return pulumi.all([ns, n])
       .apply(([a, b]) => [a.namespace, b.name])
       .apply(([namespace, name]) => ({ namespace, name }));
