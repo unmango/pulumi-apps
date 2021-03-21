@@ -9,10 +9,10 @@ export type AppConstructorParameters<T extends AppBase, U> = ConstructorParamete
 
 export abstract class AppBase extends ComponentResource {
 
-  protected readonly getName = getNameResolver(this.app, this.name);
+  protected readonly getName = getNameResolver(this.appName, this.name);
 
-  constructor(private app: string, private name: string, opts?: ComponentResourceOptions) {
-    super(`unmango:apps:${app}`, name, undefined, opts);
+  constructor(private appName: string, private name: string, opts?: ComponentResourceOptions) {
+    super(`unmango:apps:${appName}`, name, undefined, opts);
   }
 
 }
