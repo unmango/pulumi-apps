@@ -1,45 +1,21 @@
 import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { ComponentResourceOptions, Input } from '@pulumi/pulumi';
-import { AppV2 } from '@pulumi/rancher2';
-import { AppBase } from './app-base';
-import * as util from './util';
+import { AppBase, AppConstructor } from './app-base';
 
-// TODO: Allow setting default namespace in definition
-interface BaseArgs {
-  method: 'helm' | 'rancher';
-  namespace: Input<string>;
-  version?: Input<string>;
-}
+type AppConstructorArgs<T extends pulumi.Inputs> = HelmArgs & T;
 
-export interface RancherArgs extends BaseArgs {
-  method: 'rancher';
-  clusterId: Input<string>;
-  projectId?: Input<string>;
-}
-
-export interface HelmArgs extends BaseArgs {
-  method: 'helm';
-}
-
-export type Args = RancherArgs | HelmArgs;
-
-type Ctor<T extends Args, U extends pulumi.Inputs> = [
-  appName: string,
-  name: string,
-  args: T,
-  values: U,
-  chartArgs: ChartArgs,
-  opts?: ComponentResourceOptions,
-];
-
-export class HelmApp<T extends pulumi.Inputs> extends AppBase {
+export class HelmApp<T extends pulumi.Inputs = pulumi.Inputs> extends AppBase {
 
   public readonly app: k8s.helm.v3.Chart;
 
-  constructor(...ctor: Ctor<HelmArgs, T>) {
-    const [appName, name, args, values, chartArgs, opts] = ctor;
-    super(appName, name, opts);
+  constructor(
+    app: string,
+    chartArgs: ChartArgs,
+    name: string,
+    args: AppConstructorArgs<T>,
+    opts?: ComponentResourceOptions) {
+    super(app, name, opts);
 
     this.app = new k8s.helm.v3.Chart(this.getName(), {
       chart: chartArgs.chart,
@@ -50,41 +26,13 @@ export class HelmApp<T extends pulumi.Inputs> extends AppBase {
     }, { parent: this });;
   }
 
-}
-
-export class RancherApp<T extends pulumi.Inputs> extends AppBase {
-
-  public readonly app: AppV2;
-
-  constructor(...ctor: Ctor<RancherArgs, T>) {
-    const [appName, name, args, values, chartArgs, opts] = ctor;
-    super(appName, name, opts);
-
-    this.app = new AppV2(this.getName(), {
-      clusterId: args.clusterId,
-      projectId: args.projectId,
+    this.app = new k8s.helm.v3.Chart(this.getName(), {
+      chart: chartArgs.chart,
+      fetchOpts: { repo: chartArgs.repoUrl },
       namespace: args.namespace,
-      repoName: chartArgs.catalog, // Catalog name
-      chartName: chartArgs.chart,
-      chartVersion: args.version ?? chartArgs.version,
-      values: util.toYaml(values),
+      version: args.version ?? chartArgs.version,
+      values: values,
     }, { parent: this });
-  }
-
-}
-
-type AppUnion<T extends pulumi.Inputs> = HelmApp<T> | RancherApp<T>;
-
-export function newApp<T extends pulumi.Inputs>(...ctor: Ctor<HelmArgs, T>): HelmApp<T>;
-export function newApp<T extends pulumi.Inputs>(...ctor: Ctor<RancherArgs, T>): RancherApp<T>;
-export function newApp<T extends pulumi.Inputs>(...ctor: Ctor<Args, T>): AppUnion<T> {
-  const [appName, name, args, values, chartArgs, opts] = ctor;
-
-  switch (args.method) {
-    case 'helm':
-      return new HelmApp<T>(appName, name, args, values, chartArgs, opts);
-    case 'rancher':
-      return new RancherApp<T>(appName, name, args, values, chartArgs, opts);
   }
 }
 
@@ -169,4 +117,7 @@ export interface ChartArgs {
   version: Input<string>;
 }
 
-export type HelmAppArgs = Args;
+export interface HelmArgs {
+  namespace: Input<string>;
+  version?: Input<string>;
+}
