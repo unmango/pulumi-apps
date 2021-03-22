@@ -95,18 +95,17 @@ type GetApp<T extends Args, U extends pulumi.Inputs> =
 
 export type AppParams<T extends Args, U extends pulumi.Inputs> = [
   name: string,
-  args: T,
-  values: U,
+  args: T & U,
   opts?: ComponentResourceOptions,
 ];
 
 type NewAppCore = <T extends Args, U extends pulumi.Inputs>(...ctor: Ctor<T, U>) => GetApp<T, U>;
-type NewApp = <T extends Args, U extends pulumi.Inputs>(...params: AppParams<T, U>) => GetApp<T, U>;
+type NewApp<T extends pulumi.Inputs> = <U extends Args>(...params: AppParams<U, T>) => GetApp<U, T>;
 
 const newAppCore: NewAppCore = newApp;
 
-export function newAppFactory(appName: string, chartArgs: ChartArgs): NewApp {
-  return (name, args, values, opts) => newAppCore(appName, name, args, values, chartArgs, opts);
+export function newAppFactory<T extends pulumi.Inputs>(appName: string, chartArgs: ChartArgs): NewApp<T> {
+  return (name, args, opts) => newAppCore(appName, name, args, args, chartArgs, opts);
 }
 
 // export type CtorParamUnion<T extends pulumi.Inputs> =
