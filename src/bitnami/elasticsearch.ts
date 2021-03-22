@@ -15,7 +15,8 @@ export const defaultVersion = '14.2.1';
 
 export const newElasticSearch = newAppFactory<ElasticSearchArgs>(
   'elasticsearch',
-  getChartArgs(chart, defaultVersion));
+  getChartArgs(chart, defaultVersion),
+);
 
 export interface ElasticSearchArgs extends BitnamiArgs {
   global?: Input<GlobalArgs & {
