@@ -15,10 +15,10 @@ function getFooBar(test: B): Foo;
 function getFooBar(test: C): Bar;
 function getFooBar(test: D): Foo | Bar {
   switch(test.type) {
-  case 'b':
-    return new Foo();
-  case 'c':
-    return new Bar();
+    case 'b':
+      return new Foo();
+    case 'c':
+      return new Bar();
   }
 }
 
