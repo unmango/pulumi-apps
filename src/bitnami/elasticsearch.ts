@@ -1,22 +1,21 @@
 import { Input } from '@pulumi/pulumi';
-import { HelmApp, HelmAppConstructorParameters } from '../helm-app';
-import { BitnamiArgs, Debuggable, Enableable, getAppArgs, GlobalArgs, ImageArgs, ObjectArgs } from './common';
+import { newAppFactory } from '../helm-app';
+import {
+  BitnamiArgs,
+  Debuggable,
+  Enableable,
+  getAppArgs,
+  GlobalArgs,
+  ImageArgs,
+  ObjectArgs,
+} from './common';
 
-type Args = HelmAppConstructorParameters<ElasticSearchArgs>;
+export const chart = 'elasticsearch';
+export const defaultVersion = '14.2.1';
 
-export class ElasticSearch extends HelmApp<ElasticSearchArgs> {
-
-  public static readonly chart = 'elasticsearch';
-  public static readonly defaultVersion = '14.2.1';
-
-  constructor(...args: Args) {
-    super('elasticsearch', getAppArgs(
-      ElasticSearch.chart,
-      ElasticSearch.defaultVersion,
-    ), ...args);
-  }
-
-}
+export const newElasticSearch = newAppFactory<ElasticSearchArgs>(
+  'elasticsearch',
+  getAppArgs(chart, defaultVersion));
 
 export interface ElasticSearchArgs extends BitnamiArgs {
   global?: Input<GlobalArgs & {
