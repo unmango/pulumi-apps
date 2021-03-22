@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { ComponentResourceOptions, Input } from '@pulumi/pulumi';
 import { AppV2 } from '@pulumi/rancher2';
-import { AppBase, AppConstructorParameters } from './app-base';
+import { AppBase } from './app-base';
 import * as util from './util';
 
 interface BaseArgs {
@@ -19,7 +19,6 @@ export interface RancherArgs extends BaseArgs {
 
 export interface HelmArgs extends BaseArgs {
   method: 'helm';
-  temp: Input<string>;
 }
 
 export type Args = RancherArgs | HelmArgs;
