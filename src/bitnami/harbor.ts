@@ -1,26 +1,14 @@
 import { Input } from '@pulumi/pulumi';
-import { HelmApp, HelmAppConstructorParameters } from '../helm-app';
-import { BitnamiArgs, CommonArgs, getAppArgs } from './common';
+import { newAppFactory } from '../helm-app';
+import { BitnamiArgs, getChartArgs } from './common';
 
-type Args = HelmAppConstructorParameters<HarborArgs>;
+export const chart = 'harbor';
+export const defaultVersion = '9.4.7';
 
-export class Harbor extends HelmApp<HarborArgs> {
-
-  public static readonly chart = 'harbor';
-  public static readonly defaultVersion = '9.4.7';
-
-  public readonly defaultVersion = Harbor.defaultVersion;
-
-  constructor(...args: Args) {
-    super('harbor', getAppArgs(
-      Harbor.chart,
-      Harbor.defaultVersion,
-    ), ...args);
-
-    this.registerOutputs();
-  }
-
-}
+export const newHarbor = newAppFactory<HarborArgs>(
+  'harbor',
+  getChartArgs(chart, defaultVersion),
+);
 
 export interface HarborArgs extends BitnamiArgs {
   caBundleSecretName?: Input<string>;

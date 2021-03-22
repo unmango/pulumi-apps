@@ -64,24 +64,24 @@ export class ContainerApp extends AppBase {
     super(app, name, opts);
 
     switch (args.method) {
-    case 'deployment':
-      this.deployment = new k8s.apps.v1.Deployment(this.getName(), {
-        metadata: this.getMetadata(args, args.workload),
-        spec: args.workload,
-      }, { parent: this });
-      break;
-    case 'statefulset':
-      this.statefulSet = new k8s.apps.v1.StatefulSet(this.getName(), {
-        metadata: this.getMetadata(args, args.workload),
-        spec: args.workload,
-      }, { parent: this });
-      break;
-    case 'daemonset':
-      this.daemonSet = new k8s.apps.v1.DaemonSet(this.getName(), {
-        metadata: this.getMetadata(args, args.workload),
-        spec: args.workload,
-      });
-      break;
+      case 'deployment':
+        this.deployment = new k8s.apps.v1.Deployment(this.getName(), {
+          metadata: this.getMetadata(args, args.workload),
+          spec: args.workload,
+        }, { parent: this });
+        break;
+      case 'statefulset':
+        this.statefulSet = new k8s.apps.v1.StatefulSet(this.getName(), {
+          metadata: this.getMetadata(args, args.workload),
+          spec: args.workload,
+        }, { parent: this });
+        break;
+      case 'daemonset':
+        this.daemonSet = new k8s.apps.v1.DaemonSet(this.getName(), {
+          metadata: this.getMetadata(args, args.workload),
+          spec: args.workload,
+        });
+        break;
     }
 
     if (args.service) {

@@ -276,7 +276,7 @@ export type BitnamiArgs<
     [P in T]: V;
   };
 
-export const getAppArgs = (chart: string, version: string): ChartArgs => ({
+export const getChartArgs = (chart: string, version: string): ChartArgs => ({
   repo: BitnamiCatalog.catalogName,
   repoUrl: BitnamiCatalog.url,
   chart,
