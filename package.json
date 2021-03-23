@@ -1,6 +1,6 @@
 {
   "name": "@unmango/pulumi-apps",
-  "version": "0.1.7-development",
+  "version": "0.2.1",
   "description": "A compilation of typed pulumi resources",
   "main": "index.js",
   "types": "index.d.ts",
