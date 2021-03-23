@@ -2,8 +2,8 @@
   "name": "@unmango/pulumi-apps",
   "version": "0.1.7-development",
   "description": "A compilation of typed pulumi resources",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tsc",
     "postbuild": "cp package.json dist",
@@ -29,9 +29,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "dist/"
-  ],
   "devDependencies": {
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/commit-analyzer": "^8.0.1",
