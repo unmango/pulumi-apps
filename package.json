@@ -1,12 +1,11 @@
 {
   "name": "@unmango/pulumi-apps",
-  "version": "0.0.0-development",
+  "version": "0.1.7-development",
   "description": "A compilation of typed pulumi resources",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm test && npm run build && npm version patch",
     "test": "mocha -r ts-node/register 'src/**/*.spec.ts'",
     "semantic-release": "semantic-release"
   },
@@ -30,7 +29,7 @@
     "access": "public"
   },
   "files": [
-    "/dist"
+    "dist/"
   ],
   "devDependencies": {
     "@types/chai": "^4.2.15",
