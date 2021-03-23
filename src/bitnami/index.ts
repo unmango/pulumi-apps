@@ -1,3 +1,4 @@
 export * from './catalog';
-export { newElasticSearch } from './elasticsearch';
-export { newHarbor } from './harbor';
+export * from './common';
+export { newElasticSearch, ElasticSearchArgs } from './elasticsearch';
+export { newHarbor, HarborArgs } from './harbor';
