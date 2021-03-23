@@ -277,7 +277,7 @@ export type BitnamiArgs<
   };
 
 export const getChartArgs = (chart: string, version: string): ChartArgs => ({
-  repo: BitnamiCatalog.catalogName,
+  catalog: BitnamiCatalog.catalogName,
   repoUrl: BitnamiCatalog.url,
   chart,
   version,

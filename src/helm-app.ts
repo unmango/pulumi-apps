@@ -5,6 +5,7 @@ import { AppV2 } from '@pulumi/rancher2';
 import { AppBase } from './app-base';
 import * as util from './util';
 
+// TODO: Allow setting default namespace in definition
 interface BaseArgs {
   method: 'helm' | 'rancher';
   namespace: Input<string>;
@@ -63,7 +64,7 @@ export class RancherApp<T extends pulumi.Inputs> extends AppBase {
       clusterId: args.clusterId,
       projectId: args.projectId,
       namespace: args.namespace,
-      repoName: chartArgs.repo, // Catalog name
+      repoName: chartArgs.catalog, // Catalog name
       chartName: chartArgs.chart,
       chartVersion: args.version ?? chartArgs.version,
       values: util.toYaml(values),
@@ -162,7 +163,7 @@ export function newAppFactory<T extends pulumi.Inputs>(appName: string, chartArg
 
 // TODO: Allow fetching from existing catalog
 export interface ChartArgs {
-  repo: Input<string>;
+  catalog: Input<string>;
   repoUrl: Input<string>;
   chart: Input<string>;
   version: Input<string>;
