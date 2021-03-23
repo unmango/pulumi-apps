@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
+    "postbuild": "cp package.json dist",
     "test": "mocha -r ts-node/register 'src/**/*.spec.ts'",
     "semantic-release": "semantic-release"
   },
