@@ -55,7 +55,7 @@
     "@pulumi/kubernetes": "^2.8.2",
     "@pulumi/pulumi": "^2.23.2",
     "@pulumi/rancher2": "^2.9.1",
-    "@pulumi/random": "^3.1.1",
+    "@pulumi/random": "^4.0.0",
     "yaml": "^1.10.0"
   }
 }
