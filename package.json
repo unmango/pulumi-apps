@@ -6,10 +6,11 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tsc",
+    "gen:cert-manager": "crd2pulumi --nodejsPath ./src/cert-manager --nodejsName cert-manager ./submodules/cert-manager/deploy/crds/*.yaml --force",
     "postbuild": "cp package.json dist",
-    "test": "mocha -r ts-node/register 'src/**/*.spec.ts'",
+    "postversion": "cp -r package.json ..",
     "semantic-release": "semantic-release",
-    "postversion": "cp -r package.json .."
+    "test": "mocha -r ts-node/register 'src/**/*.spec.ts'"
   },
   "repository": {
     "type": "git",
