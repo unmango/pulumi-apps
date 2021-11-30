@@ -4,14 +4,14 @@ import * as pulumi from '@pulumi/pulumi';
 beforeEach(() => {
 
   pulumi.runtime.setMocks({
-    newResource: function (type: string, name: string, inputs: any): { id: string, state: any; } {
+    newResource: ({ inputs }: pulumi.runtime.MockResourceArgs): { id: string, state: Record<string, any>; } => {
       return {
         id: inputs.name + '_id',
         state: inputs,
       };
     },
-    call: function (token: string, args: any, provider?: string) {
-      return args;
+    call: ({ inputs }: pulumi.runtime.MockCallArgs): Record<string, any> => {
+      return inputs;
     },
   });
 
