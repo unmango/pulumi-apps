@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/unmango/pulumi-apps/compare/v0.2.1...v0.2.2) (2022-03-17)
+
+
+### Bug Fixes
+
+* **node:** Use node 16 everywhere ([#400](https://github.com/unmango/pulumi-apps/issues/400)) ([e773479](https://github.com/unmango/pulumi-apps/commit/e773479792f5c25f6b78fe45f044c99c7473e058))
+
 ## [0.2.1](https://github.com/unmango/pulumi-apps/compare/v0.2.0...v0.2.1) (2021-03-23)
 
 
