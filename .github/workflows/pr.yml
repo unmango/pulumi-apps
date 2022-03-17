@@ -13,7 +13,7 @@ jobs:
     - name: setup
       uses: actions/setup-node@v2
       with:
-        node-version: '15'
+        node-version-file: '.nvmrc'
     - name: install
       run: npm ci
     - name: test
