@@ -56,6 +56,6 @@
     "@pulumi/pulumi": "^3.1.0",
     "@pulumi/rancher2": "^3.0.0",
     "@pulumi/random": "^4.0.0",
-    "yaml": "^1.10.0"
+    "yaml": "^2.0.1"
   }
 }
